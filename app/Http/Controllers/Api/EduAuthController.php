@@ -80,7 +80,7 @@ class EduAuthController extends Controller
 
             $respond = $client->request('POST', $url, ['form_params' => $params]);
         } catch (RequestException $exception) {
-            return $this->failed('账号或密码错误',401);
+            return $this->failed('账号或密码错误'.$exception->getMessage(),401);
         }
 
         if ($respond->getStatusCode() !== 401) {
