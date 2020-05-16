@@ -13,7 +13,7 @@ class EduRegisterController extends Controller
     public function registerTeacher()
     {
         try{
-            $teacher = EduTeacher::createTeacher(request('name'), request('email'), request('pass'));
+            $teacher = EduTeacher::createTeacher(request('name'), request('email'), request('password'));
             return $this->ok();
         }catch (\Exception $e){
             return $this->failed("注册失败！");

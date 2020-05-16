@@ -23,39 +23,39 @@ use Encore\Admin\Grid;
 
 Encore\Admin\Form::forget(['map', 'editor']);
 
-Grid::init(function (Grid $grid) {
-
-    $grid->disableActions();
-
-    $grid->disablePagination();
-
-    $grid->disableCreateButton();
-
-    $grid->disableFilter();
-
-    $grid->disableRowSelector();
-
-    $grid->disableTools();
-
-    $grid->disableExport();
-
-    $grid->actions(function (Grid\Displayers\Actions $actions) {
-        $actions->disableView();
-        $actions->disableEdit();
-        $actions->disableDelete();
-    });
-});
-Form::init(function (Form $form) {
-
-    $form->disableEditingCheck();
-
-    $form->disableCreatingCheck();
-
-    $form->disableViewCheck();
-
-    $form->tools(function (Form\Tools $tools) {
-        $tools->disableDelete();
-        $tools->disableView();
-        $tools->disableList();
-    });
-});
+//Grid::init(function (Grid $grid) {
+//
+//    $grid->disableActions();
+//
+//    $grid->disablePagination();
+//
+//    $grid->disableCreateButton();
+//
+//    $grid->disableFilter();
+//
+//    $grid->disableRowSelector();
+//
+//    $grid->disableTools();
+//
+//    $grid->disableExport();
+//
+//    $grid->actions(function (Grid\Displayers\Actions $actions) {
+//        $actions->disableView();
+//        $actions->disableEdit();
+//        $actions->disableDelete();
+//    });
+//});
+//Form::init(function (Form $form) {
+//
+//    $form->disableEditingCheck();
+//
+//    $form->disableCreatingCheck();
+//
+//    $form->disableViewCheck();
+//
+//    $form->tools(function (Form\Tools $tools) {
+//        $tools->disableDelete();
+//        $tools->disableView();
+//        $tools->disableList();
+//    });
+//});

@@ -41,7 +41,7 @@ Route::group([
         // 老师获取关注自己的学生列表
         Route::get('school/{school}/follows', 'EduTeacherController@follows');
         /*********     老师部分END      **********/
-
+        // todo 增加中间件判断老师和学生
 
         /*********    学生部分START    **********/
         Route::group([
