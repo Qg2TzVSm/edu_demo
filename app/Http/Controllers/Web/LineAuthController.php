@@ -58,7 +58,7 @@ class LineAuthController extends Controller
             }
         }else{
             $nonce = session('nonce');
-            $cache_data = cache("{{$nonce}}");
+            $cache_data = cache("{$nonce}");
             if (empty($nonce) || empty($cache_data)){
                 $err = '非法请求';
             }else{
