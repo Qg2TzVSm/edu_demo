@@ -67,7 +67,11 @@ class LineAuthController extends Controller
                     $err = '系统错误';
                 }else{
                     $result = $this->getToken($code, $nonce, $cache_data['user_type'], $cache_data['user_id']);
-                    return Redirect::to("https://edu-chat-server.herokuapp.com/?#/bind/result={$result}", 302);
+                    if ($result !== true){
+                        $err = $result;
+                    }else{
+                        return Redirect::to("https://edu-chat-server.herokuapp.com/?#/bind/?result={$result}", 302);
+                    }
                 }
             }
         }
@@ -123,7 +127,7 @@ class LineAuthController extends Controller
             return true;
         }catch (\Exception $e){
             info($e->getMessage());
-            return false;
+            return $e->getMessage();
         }
     }
 
