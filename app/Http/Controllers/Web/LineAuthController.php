@@ -134,7 +134,7 @@ class LineAuthController extends Controller
             return [
                 'openid' => $data['sub'],//暂取sub作为openid
                 'name' => $data['name'],
-                'avatar' => $data['picture']
+                'avatar' => $data['picture'] ?? null
             ];
         }catch (\Exception $exception){
             dd($exception->getMessage());
