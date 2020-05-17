@@ -87,12 +87,16 @@ class EduTeacher extends Authenticatable
 //            $pass = str_random(6);
             // 一个老师可能同时是一个学校的管理员又是另外一个学校的管理员或普通老师 但邮箱地址唯一
             $pass = 'secret';
-            Administrator::updateOrCreate([
+            $user = Administrator::updateOrCreate([
                 'username' => $teacher->email,
             ],[
                 'password' => bcrypt($pass),
                 'name'     => $teacher->name,
             ]);
+            $role = Role::query()
+                ->where('name', $role_type===1 ? 'SchoolAdministrator' : 'SchoolTeacher')->first();
+            $roles_before = $user->roles()->pluck('id')->toArray();
+            $user->roles()->sync(array_unique(array_merge($roles_before, array($role->id))));
             // todo 将创建好的老师登陆信息发送给用户，邮件或站内信，为了方便直接设置为secret
         }catch (\Exception $e){
 

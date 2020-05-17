@@ -28,7 +28,7 @@ class EduTeacherController extends AdminController
 
         $grid->column('id', __('Id'));
         $grid->column('name', __('Name'));
-        $grid->column('avatar', __('Avatar'));
+        $grid->column('avatar', __('Avatar'))->image("",100,100);
         $grid->column('email', __('Email'));
         $grid->column('verified', __('Verified'))->display(function ($v){return $v ? 'Verified' : 'Un Verified';});
         $grid->column('created_at', __('Created at'));
