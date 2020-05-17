@@ -11,6 +11,8 @@ use Laravel\Passport\HasApiTokens;
 class EduStudent extends Authenticatable
 {
     use HasApiTokens, Notifiable;
+    protected $guarded = [];
+
     public function school()
     {
         return $this->belongsTo(EduSchool::class, 'school_id', 'id');

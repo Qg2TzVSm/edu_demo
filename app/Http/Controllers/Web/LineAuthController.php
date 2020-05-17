@@ -126,7 +126,6 @@ class LineAuthController extends Controller
 
             return true;
         }catch (\Exception $e){
-            info($e->getMessage());
             return $e->getMessage();
         }
     }
