@@ -36,6 +36,14 @@ class EduStudentController extends AdminController
             // 学校管理员可以创建学生
             if (EduTeacher::isMasterOfSchool($teacher, $school_id)){
                 $grid->disableCreateButton(false);
+                $grid->disableActions(false);
+                $grid->actions(function (Grid\Displayers\Actions $actions) {
+                    $actions->disableView();
+                    $actions->disableEdit();
+                    $actions->disableDelete();
+                    $actions->append("<div class='mb-5'><a class='btn btn-xs action-btn btn-success grid-send-msg' data-id='{$actions->getKey()}'><i class='fa fa-check'></i> 发通知</a></div>");
+                });
+                $msg_script = $this->createNotifyButton($teacher->id);
             }
             $schools = optional($teacher->schools())->pluck('name','edu_schools.id')->toArray();
             $selects = "";
@@ -73,6 +81,7 @@ success: function (data) {
 });
 });
 EOT;
+            $script .= $msg_script ?? '';
             Admin::script($script);
         }
 
@@ -154,5 +163,49 @@ EOT;
         });
 
         return $form;
+    }
+
+    protected function createNotifyButton($teacher_id)
+    {
+        $script = <<<EOF
+var wsServer = 'ws://edu-chat-server.herokuapp.com/ws';
+    var websocket = new WebSocket(wsServer);
+      websocket.onopen = function () {
+        console.log("Connected to WebSocket server.");
+        websocket.send(JSON.stringify({
+          type:0,
+          user_type:2,
+          id:0,
+          from:{$teacher_id},
+        }));
+      };
+
+      websocket.onclose = function () {
+        console.log("Disconnected");
+      };
+
+      websocket.onmessage = function (evt) {
+        console.log('Retrieved data from server: ' + evt.data);
+      };
+
+      websocket.onerror = function (evt) {
+        console.log('Error occured: ' + evt.data);
+      };
+$('.grid-send-msg').unbind('click').click(function() {
+    var id = $(this).data('id');
+swal({text: 'Send Msg:', input: 'text'})
+.then((value) => {
+  websocket.send(JSON.stringify({
+          type:2,
+          user_type: 0,
+          id:id,
+          from:{$teacher_id},
+          msg:value.value,
+        }));
+  swal(`发送成功`);
+});
+});
+EOF;
+    return $script;
     }
 }
