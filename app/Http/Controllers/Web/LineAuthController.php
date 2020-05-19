@@ -136,7 +136,7 @@ class LineAuthController extends Controller
                 return false;
             }
             $user = $this->decodeJwtGetNameAndPic($data['id_token']);
-            cache(["$nonce" => ['line_user_id' => LineUser::query()->where('openid', $user['openid'])->firstOrFail()->id]]);
+            cache(["$nonce" => ['line_user_id' => LineUser::query()->where('openid', $user['openid'])->firstOrFail()->id]], 30);
             return true;
         }catch (\Throwable $exception){
             return $exception->getMessage();
