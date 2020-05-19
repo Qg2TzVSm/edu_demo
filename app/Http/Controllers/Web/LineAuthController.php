@@ -27,6 +27,7 @@ class LineAuthController extends Controller
     public function index()
     {
         $nonce = request('nonce');
+        $line = request('line', 0);
         // 客户端请求的随机码，可以设置规则，这里不校验
         if (empty($nonce) || strlen($nonce)!=8 ){
             //错误处理
@@ -37,7 +38,7 @@ class LineAuthController extends Controller
         $query = http_build_query([
             'response_type' => 'code',
             'client_id' => $this->clientId(),
-            'redirect_uri' => secure_url('/callback', ['line' => request('line', 0)]),
+            'redirect_uri' => secure_url("/callback?line={$line}"),
             'state' => $state,
             'scope' => "profile openid"
         ], '', '&', PHP_QUERY_RFC3986);
