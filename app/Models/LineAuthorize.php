@@ -15,7 +15,7 @@ class LineAuthorize extends BaseModel
 
     public function scopeStudent($query)
     {
-        return $query->where('authorizes_type', 1);
+        return $query->where('authorizes_type', 0);
     }
 
     public function students()
