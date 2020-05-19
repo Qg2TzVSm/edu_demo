@@ -131,7 +131,7 @@ class LineAuthController extends Controller
     protected function loginByLine($code, $nonce)
     {
         try {
-            $data = $this->authWithLine($code);
+            $data = $this->authWithLine($code, 1);
             if ($data === false){
                 return false;
             }
@@ -157,7 +157,7 @@ class LineAuthController extends Controller
         }
     }
 
-    protected function authWithLine($code)
+    protected function authWithLine($code, $line=0)
     {
         try {
             $client = new \GuzzleHttp\Client();
@@ -165,7 +165,7 @@ class LineAuthController extends Controller
                 'form_params' => [
                     'grant_type' => 'authorization_code',
                     'code' => $code,
-                    'redirect_uri' => secure_url('/callback'),
+                    'redirect_uri' => secure_url("/callback?line={$line}"),
                     'client_id' => $this->clientId(),
                     'client_secret' => $this->clientSecret()
                 ]]);
