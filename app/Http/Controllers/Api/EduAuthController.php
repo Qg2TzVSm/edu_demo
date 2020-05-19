@@ -7,9 +7,11 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\EduTeacher;
 use App\Models\LineAuthorize;
+use App\Models\LineUser;
 use GuzzleHttp\Exception\RequestException;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Config;
 use Laravel\Passport\Client;
 use Validator;
 
@@ -111,5 +113,42 @@ class EduAuthController extends Controller
             'user_id' => $user->id,
         ]], 30);
         return $this->message($nonce);
+    }
+
+
+    public function loginByLinePrepare()
+    {
+        $verify_params = \request('nonce');
+        if (empty($verify_params) || !is_string($verify_params) || strlen($verify_params) != 12){
+            return $this->failed('system error');
+        }
+        $cache = cache($verify_params);
+        if (empty($cache)){
+            return $this->failed('登陆已过期');
+        }
+        $user = LineUser::query()->findOrFail($cache['line_user_id']);
+        // 返回所有与该账号绑定的老师用户与学生
+        return $this->message([
+            'teachers' => $user->teacherAuthorizes()->with(["teachers" => function($q){
+            $q->select("id", 'name');
+        }])->get()->pluck('teachers')->toArray(),
+            'students' => $user->studentAuthorizes()->with(["students" => function($q){
+                $q->select("id", 'name');
+            }])->get()->pluck('students')->toArray(),
+        ]);
+    }
+
+    public function loginByLine()
+    {
+        $auth_type = \request('auth_type') ?? 1;
+        $this->authType = $auth_type;
+        // todo 这里没有校验用户，其实应该校验该登陆账号是否经由line授权
+        $user = $this->model()->findOrFail(intval(\request('user_id')));
+        Config::set('auth.guards.api.provider', $this->authGuard());
+        $token = $user->createToken("auth_by_line")->accessToken;
+        return $this->message([
+            'token_type' => 'Bearer',
+            'access_token' => $token
+        ]);
     }
 }

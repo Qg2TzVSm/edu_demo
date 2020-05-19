@@ -22,6 +22,10 @@ Route::group([
     Route::post('login','EduAuthController@login');
     // 老师注册
     Route::post('register','EduRegisterController@registerTeacher');
+    // line 登陆pre
+    Route::get('login/by/line','EduAuthController@loginByLinePrepare');
+    // line 登陆
+    Route::post('login/by/line','EduAuthController@loginByLine');
 
     Route::middleware(['auth:api','auth.custom'])->group(function (){
 //        Route::post('test','TestController@test');

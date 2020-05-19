@@ -37,7 +37,7 @@ class LineAuthController extends Controller
         $query = http_build_query([
             'response_type' => 'code',
             'client_id' => $this->clientId(),
-            'redirect_uri' => secure_url('/callback'),
+            'redirect_uri' => secure_url('/callback', ['line' => request('line', 0)]),
             'state' => $state,
             'scope' => "profile openid"
         ], '', '&', PHP_QUERY_RFC3986);
@@ -49,6 +49,7 @@ class LineAuthController extends Controller
     {
         $code = request('code');
         $state = request('state');
+        $auth_type = request('line', 0);
         if (empty($code) || empty($state)){
             $error = request('error');
             if (!empty($error)){
@@ -58,20 +59,32 @@ class LineAuthController extends Controller
             }
         }else{
             $nonce = session('nonce');
-            $cache_data = cache("{$nonce}");
-            if (empty($nonce) || empty($cache_data)){
+            $session_state = session('line_oauth_token');
+            if (empty($nonce) || empty($session_state) || $state !== $session_state){
                 $err = '非法请求';
             }else{
-                $session_state = session('line_oauth_token');
-                if (empty($session_state) || $state !== $session_state){
-                    $err = '系统错误';
-                }else{
-                    $result = $this->getToken($code, $nonce, $cache_data['user_type'], $cache_data['user_id']);
-                    if ($result !== true){
+                if ($auth_type == 0){ // 绑定line
+                    $cache_data = cache("{$nonce}");
+                    if (empty($cache_data)){
+                        $err = '请求已过期';
+                    }else{
+                        $result = $this->getToken($code, $nonce, $cache_data['user_type'], $cache_data['user_id']);
+                        if ($result !== true){
+                            $err = $result;
+                        }else{
+                            return Redirect::to("https://edu-chat-server.herokuapp.com/?#/bind/?result={$result}", 302);
+                        }
+                    }
+                }else if ($auth_type == 1){ // line 登陆
+                    $nonce = str_random(12);
+                    $result = $this->loginByLine($code, $nonce);
+                    if ($result !== true) {
                         $err = $result;
                     }else{
-                        return Redirect::to("https://edu-chat-server.herokuapp.com/?#/bind/?result={$result}", 302);
+                        return Redirect::to("https://edu-chat-server.herokuapp.com/?#/login/?nonce={$nonce}", 302);
                     }
+                }else{
+                    $err = '非法操作';
                 }
             }
         }
@@ -82,26 +95,10 @@ class LineAuthController extends Controller
     protected function getToken($code, $nonce, $user_type, $user_id)
     {
         try {
-            $client = new \GuzzleHttp\Client();
-            $response = $client->request('POST', 'https://api.line.me/oauth2/v2.1/token',[
-                'form_params' => [
-                    'grant_type' => 'authorization_code',
-                    'code' => $code,
-                    'redirect_uri' => secure_url('/callback'),
-                    'client_id' => $this->clientId(),
-                    'client_secret' => $this->clientSecret()
-                ]]);
-            $statusCode = $response->getStatusCode(); # 200
-
-            $res = json_decode($response->getBody()->getContents(),true);
-            $data = [
-                "access_token" => $res['access_token'],
-                "expires_in" => $res['expires_in'],
-                "id_token" => $res['id_token'],
-                "refresh_token" => $res['refresh_token'],
-                "scope" => $res['scope'],
-                "token_type" => "Bearer"
-            ];
+            $data = $this->authWithLine($code);
+            if ($data === false){
+                return false;
+            }
             $user = $this->decodeJwtGetNameAndPic($data['id_token']);
             $result = [
                 'token' => $data['access_token'],
@@ -130,6 +127,21 @@ class LineAuthController extends Controller
         }
     }
 
+    protected function loginByLine($code, $nonce)
+    {
+        try {
+            $data = $this->authWithLine($code);
+            if ($data === false){
+                return false;
+            }
+            $user = $this->decodeJwtGetNameAndPic($data['id_token']);
+            cache(["$nonce" => ['line_user_id' => LineUser::query()->where('openid', $user['openid'])->firstOrFail()->id]]);
+            return true;
+        }catch (\Throwable $exception){
+            return $exception->getMessage();
+        }
+    }
+
     protected function decodeJwtGetNameAndPic($jwt)
     {
         try {
@@ -141,6 +153,35 @@ class LineAuthController extends Controller
             ];
         }catch (\Exception $exception){
             dd($exception->getMessage());
+        }
+    }
+
+    protected function authWithLine($code)
+    {
+        try {
+            $client = new \GuzzleHttp\Client();
+            $response = $client->request('POST', 'https://api.line.me/oauth2/v2.1/token',[
+                'form_params' => [
+                    'grant_type' => 'authorization_code',
+                    'code' => $code,
+                    'redirect_uri' => secure_url('/callback'),
+                    'client_id' => $this->clientId(),
+                    'client_secret' => $this->clientSecret()
+                ]]);
+            $statusCode = $response->getStatusCode(); # 200
+
+            $res = json_decode($response->getBody()->getContents(),true);
+            $data = [
+                "access_token" => $res['access_token'],
+                "expires_in" => $res['expires_in'],
+                "id_token" => $res['id_token'],
+                "refresh_token" => $res['refresh_token'],
+                "scope" => $res['scope'],
+                "token_type" => "Bearer"
+            ];
+            return $data;
+        }catch (\Throwable $exception){
+            return false;
         }
     }
 }
