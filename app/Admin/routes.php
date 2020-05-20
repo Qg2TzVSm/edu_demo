@@ -16,6 +16,8 @@ Route::group([
     $router->get('edu-school/audit', 'EduAuditController@index');
     $router->post('edu-school/audit/{id}', 'EduAuditController@audit');
     $router->post('edu-student/chose/{id}', 'EduStudentController@chose');
-
+    $router->get('edu-msg/send', 'EduMsgController@index');
+    $router->get('edu-msg/get-users-via-type', 'EduMsgController@users');
+    $router->post('edu-msg/send', 'EduMsgController@send');
 
 });

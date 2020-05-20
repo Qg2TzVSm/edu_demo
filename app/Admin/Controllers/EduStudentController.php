@@ -168,7 +168,7 @@ EOT;
     protected function createNotifyButton($teacher_id)
     {
         $script = <<<EOF
-var wsServer = 'ws://edu-chat-server.herokuapp.com/ws';
+var wsServer = 'wss://edu-chat-server.herokuapp.com/ws';
     var websocket = new WebSocket(wsServer);
       websocket.onopen = function () {
         console.log("Connected to WebSocket server.");
