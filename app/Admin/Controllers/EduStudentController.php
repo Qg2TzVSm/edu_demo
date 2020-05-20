@@ -197,8 +197,9 @@ swal({text: 'Send Msg:', input: 'text'})
 .then((value) => {
   websocket.send(JSON.stringify({
           type:2,
-          user_type: 0,
+          user_type: 1,
           id:id,
+          to_user_type: 0,
           from:{$teacher_id},
           msg:value.value,
         }));

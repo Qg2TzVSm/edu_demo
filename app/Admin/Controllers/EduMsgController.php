@@ -85,8 +85,9 @@ $('button[type=submit]').on('click',function(e){
         e.preventDefault();
         websocket.send(JSON.stringify({
           type:3,
-          user_type: user_type,
+          user_type: parseInt(user_type),
           id:user_id,
+          to_user_type: parseInt(user_type),
           from:0,
           msg:msg,
         }));
