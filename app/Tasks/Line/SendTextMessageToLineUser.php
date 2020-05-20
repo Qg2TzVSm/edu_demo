@@ -16,7 +16,7 @@ class SendTextMessageToLineUser
     {
         try {
             $client = new \GuzzleHttp\Client();
-            $res = $client->post('url', [
+            $res = $client->post('https://api.line.me/v2/bot/message/multicast', [
                 'headers' => [
                     'Content-Type' => 'application/json',
                     'Authorization' => 'Bearer '.$this->line_msg_token(),

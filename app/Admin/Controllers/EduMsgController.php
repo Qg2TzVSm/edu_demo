@@ -66,8 +66,12 @@ class EduMsgController extends Controller
     public function genScript()
     {
         $script = <<<EOF
+var websocket;
 var wsServer = 'wss://edu-chat-server.herokuapp.com/ws';
-    var websocket = new WebSocket(wsServer);
+if(websocket !== undefined){
+    websocket.close();
+}
+    websocket = new WebSocket(wsServer);
       websocket.onopen = function () {
         console.log("Connected to WebSocket server.");
         websocket.send(JSON.stringify({
